@@ -1,5 +1,15 @@
 <?xml version="1.0"?>
 <odoo>
+    <record id="estate_property_type_view_search" model="ir.ui.view">
+        <field name="name">estate.property.type.search</field>
+        <field name="model">estate.property.type</field>
+        <field name="arch" type="xml">
+            <search string="Search Property Type">
+                <field name="name"/>
+            </search>
+        </field>
+    </record>
+
     <!-- Tree view for Property Type -->
     <record id="estate_property_type_view_tree" model="ir.ui.view">
         <field name="name">estate.property.type.list</field>
