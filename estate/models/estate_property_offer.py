@@ -3,6 +3,8 @@
 
 from odoo import api, fields, models
 from dateutil.relativedelta import relativedelta
+from odoo.exceptions import ValidationError
+from odoo.tools.float_utils import float_compare
 
 class EstatePropertyOffer(models.Model):
     _name = "estate.property.offer"
@@ -56,6 +58,7 @@ class EstatePropertyOffer(models.Model):
 
     def action_accept_offer(self):
         for record in self:
+            # Accept the offer 
             record.status = 'accepted'
             record.property_id.selling_price = record.price
             record.property_id.partner_id = record.partner_id
@@ -72,3 +75,4 @@ class EstatePropertyOffer(models.Model):
         for record in self:
             record.status = 'refused'
         return True
+    

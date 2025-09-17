@@ -3,10 +3,13 @@
 
 from odoo import api, fields, models
 from dateutil.relativedelta import relativedelta
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools.float_utils import float_compare
+
 
 class EstateProperty(models.Model):
     _name = "estate.property"
+    _inherit = ["mail.thread"]  # enables chatter tracking
     _description = "Real estate housing distribution"
 
     name = fields.Char(required=True, default='Unkwown Property')
@@ -33,8 +36,27 @@ class EstateProperty(models.Model):
         copy=False, 
         default=lambda self: fields.Date.today() + relativedelta(months=3)
         )
+    
     expected_price = fields.Float(required=True)
+    @api.constrains('expected_price')
+    def _check_expected_price(self):
+        for record in self:
+            if float_compare(record.expected_price, 0.0, precision_rounding=0.01) <= 0:
+                raise ValidationError("The expected price must be strictly positive.")
+
+
     selling_price = fields.Float(readonly=True, copy=False)
+
+    @api.constrains('selling_price', 'expected_price')
+    def _check_selling_price(self):
+        for record in self:
+            # Only apply the selling price check if a selling price has been set
+            # This prevents errors on new records where selling_price is 0.0 initially
+            if float_compare(record.selling_price, 0.0, precision_rounding=0.01) > 0 and \
+               float_compare(record.selling_price, record.expected_price * 0.9, precision_rounding=0.01) < 0:
+                raise ValidationError("The selling price must be at least 90% of the expected price.")
+            
+            
     bedrooms = fields.Integer(default=2)
     living_area = fields.Integer()
     facades = fields.Integer()
